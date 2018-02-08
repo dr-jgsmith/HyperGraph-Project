@@ -1,6 +1,6 @@
 # HyperGraph: An Embedded Distributed Application Framework for the Study and Design of Intelligent Systems
 
-##Overview
+## Overview
 Improvements in computational processing speed has unleashed a flood of research into  the application of topology to a range of complex, n-dimensional systems problems. This has lead to major breakthroughs in medical diagnostics, computer graphics, decision-science, systems design, and artificial intelligence. Despite a growing body of research stretching back to the 1930s, there are surprisingly few computing frameworks that specifically support topological data analysis (TDA). 
 
 **HyperGraph** is a lightweight, experimental computing framework that implements a polyhedral dynamics approach to the study of ontological assemblages and artifical intelligence. In particular, HyperGraph provides a software implementation of Johnson's hypernetwork theory (Johnson 2014; 2016) and Atkin's Q-analysis (Atkin 1974; 1977). HyperGraph’s use of simplicial families and complexes, makes it suitable as a general computing framework for studying a diverse set of complex systems, including natural language. 
