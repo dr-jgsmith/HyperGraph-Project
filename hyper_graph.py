@@ -42,29 +42,29 @@ def incidentMatrix(matrix, theta=1):
     return np.array(incident)
 
 
-def normPositive(C):
-    matrix = []
-    for i in C:
+def normPositive(matrix):
+    normalized_matrix = []
+    for i in matrix:
         x = max(i)
         y = min(i)
         row = []
         for j in i:
             a = (j-y)/(x-y)
             row.append(a)
-        matrix.append(row)      
-    return matrix
+        normalized_matrix.append(row)      
+    return normalized_matrix
 
-def normNeg(C):
-    matrix = []
-    for i in C:
+def normNeg(matrix):
+    normalized_matrix = []
+    for i in matrix:
         x = max(i)
         y = min(i)
         row = []
         for j in i:
             a = (x-j)/(x-y)
             row.append(a)
-        matrix.append(row)      
-    return matrix
+        normalized_matrix.append(row)      
+    return normalized_matrix
 
 def computeConjugate(incident):
     incident_transpose = incident.transpose()
