@@ -7,9 +7,7 @@ Created on Wed Feb  7 10:03:26 2018
 """
 
 """
-This section of code will need to be placed in a seperate application file,
-but for our purposes here, these will serve as the base set of visual outputs
-for the simplicical complex computations.
+Visualization functions for processing graphs, hypergraphs and simplicial complexes.
 
 """
 import numpy as np
