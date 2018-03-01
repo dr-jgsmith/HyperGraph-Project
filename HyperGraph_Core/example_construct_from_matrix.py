@@ -6,7 +6,7 @@ Created on Wed Feb  7 11:38:04 2018
 @author: justinsmith
 """
 from q_analysis import *
-from hypergraph_kv import HyperGraphDB
+
 
 A = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L']
 
@@ -26,9 +26,9 @@ matrix = [[0, 1, 7, 0, 1, 6, 3, 2],
           [3, 6, 6, 0, 1, 0, 0, 1]]
 
 
-db = HyperGraphDB('tmp.db')
-db.update_from_matrix(A, B, matrix)
-matrix2 = db.construct_matrix()
+#db = HyperGraphDB('tmp.db')
+#db.update_from_matrix(A, B, matrix)
+#matrix2 = db.construct_matrix()
 
-qchains = computeNormalizedQ(matrix2, A, B, label=None, visualize=True, theta=0.2)
+qchains = computeNormalizedQ(matrix, A, B, label=None, visualize=True, theta=0.2)
 #qchains = computeNormalizedConj(matrix2, A, B, label=None, visualize=None, theta=0.2)
