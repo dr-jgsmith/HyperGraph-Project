@@ -4,191 +4,68 @@
 Created on Wed Feb  7 10:04:26 2018
 
 @author: justinsmith
-"""
+
+
+
+The following function represents the main app function for computing system properties
+
+There are different functions to compute the qanalysis.
+These include computing q over a singele threshold or a uniform slice.
+
+
+""" 
+
 import numpy as np
 import networkx as nx
 from hyper_graph import *
 from graph_utils import *
 from diagnostic import *
 from visualization import *
+from hypergraph_kv import HyperGraphDB
 
-"""
-The following function represents the main app function for computing system properties
-"""    
-def computeQAnalysis(matrix, row_headers, col_headers, label):
+
+   
+def computeQAnalysis(matrix, row_headers, col_headers, label, visualize=None, theta=1):
     '''
     For now we have to run an inital scan of the data to discover the structure in order
     to compute a complete structural analysis of the data. This could be shortfall of the algortithm.
     '''
     simplicies = row_headers
     verticies = col_headers
-    
+    #Return variables
     Qchains = []
     Qnear = []
     Fronts = []
-    
-    incident = incidentMatrix(matrix, theta=1)
+    #compute inital structure vector
+    incident = incidentMatrix(matrix, theta=theta)
     conj = computeConjugate(incident)
     qface = computeQFace(incident, conj)
     qmatrix = computeQMatrix(qface)
+    #structure vector for computing q-analysis
     structure = computeQStruct(qmatrix)
-    
     cnt = 1
+    #Iterate through the complex given the n-dimensional structure
     while cnt <= max(structure):
         #matrix constructor methods
-        incident = incidentMatrix(matrix, theta=cnt)
-        conj = computeConjugate(incident)
-        qface = computeQFace(incident, conj)
-        qmatrix = computeQMatrix(qface)
+        qface = computeQMatrix(qface)
         #graph methods
-        wedges = construct_weighted_graph(qmatrix, simplicies)
+        wedges = construct_weighted_graph(qface, simplicies)
         #simplicial complex  methods
         qchains = computeEqClasses(wedges)
         qnear = computeQNear(wedges)
         qfronts = computeFronts(qnear)
-        
-        #Retain these attributes
+        #Retain these attributes for other computing features
         if len(wedges) < 1:
             pass
         else:
             Qchains.append(qchains)
             Qnear.append(qnear)
             Fronts.append(qfronts)
-        
         #visualize methods
         if len(wedges) < 1:
             pass
         else:
-            dim = cnt - 1
-            print('Q Dimension: ', dim)
-            print(label)
-            visualize_weighted_graph(wedges)
-            print('Q Dimension: ', dim)
-            print(label)
-            visualize_qmatrix(qmatrix)
-            #visualize_bipart_graph(bigraph)
-        #visualize methods
-        #visualize_simple_graph(incident, conj))
-        #visualize_bipart_graph(bigraph)
-          
-        cnt = cnt + 1
-    return Qchains, Qnear, Fronts, structure
-
-
-def computeConjQAnalysis(matrix, row_headers, col_headers, label):
-    '''
-    For now we have to run an inital scan of the data to discover the structure in order
-    to compute a complete structural analysis of the data. This could be shortfall of the algortithm.
-    '''
-    verticies = col_headers
-    simplicies = row_headers
-    
-    Qchains = []
-    Qnear = []
-    Fronts = []
-    
-    incident = incidentMatrix(matrix, theta=1)
-    conj = computeConjugate(incident)
-    
-    #Swap values
-    incident = conj
-    conj = computeConjugate(incident)
-    
-    qface = computeQFace(incident, conj)
-    qmatrix = computeQMatrix(qface)
-    structure = computeQStruct(qmatrix)
-    
-    cnt = 1
-    while cnt <= max(structure):
-        #matrix constructor methods
-        incident = incidentMatrix(matrix, theta=cnt)
-        conj = computeConjugate(incident)
-    
-        #Swap values
-        incident = conj
-        conj = computeConjugate(incident)
-        
-        qface = computeQFace(incident, conj)
-        qmatrix = computeQMatrix(qface)
-        #graph methods
-        wedges = construct_weighted_graph(qmatrix, verticies)
-        #simplicial complex  methods
-        qchains = computeEqClasses(wedges)
-        qnear = computeQNear(wedges)
-        qfronts = computeFronts(qnear)
-        
-
-        #Retain these attributes
-        if len(wedges) < 1:
-            pass
-        else:
-            Qchains.append(qchains)
-            Qnear.append(qnear)
-            Fronts.append(qfronts)
-        
-        #visualize methods
-        if len(wedges) < 1:
-            pass
-        else:
-            dim = cnt - 1
-            print('Q Dimension: ', dim)
-            print(label)
-            visualize_weighted_graph(wedges)
-            print('Q Dimension: ', dim)
-            print(label)
-            visualize_conjugate(qmatrix)
-            #visualize_simple_graph(incident, conj))
-            #visualize_bipart_graph(bigraph)
-          
-        cnt = cnt + 1
-    return Qchains, Qnear, Fronts, structure
-
-
-
-def computeQAnalysis2(matrix, row_headers, col_headers, label):
-    '''
-    For now we have to run an inital scan of the data to discover the structure in order
-    to compute a complete structural analysis of the data. This could be shortfall of the algortithm.
-    '''
-    simplicies = row_headers
-    verticies = col_headers
-    
-    Qchains = []
-    Qnear = []
-    Fronts = []
-    
-    normalized_matrix = normPositive(matrix)
-    theta = 0.1
-    while theta < 1:
-        incident = incidentMatrix(normalized_matrix, theta=theta)
-        conj = computeConjugate(incident)
-        qface = computeQFace(incident, conj)
-        qmatrix = computeQMatrix(qface)
-        structure = computeQStruct(qmatrix)
-        print("Threshold Value: ", theta)
-        cnt = 1
-        while cnt <= max(structure):
-            #matrix constructor methods
-            qface = computeQMatrix(qface)
-            #graph methods
-            wedges = construct_weighted_graph(qface, simplicies)
-            #simplicial complex  methods
-            qchains = computeEqClasses(wedges)
-            qnear = computeQNear(wedges)
-            qfronts = computeFronts(qnear)
-            
-            #Retain these attributes
-            if len(wedges) < 1:
-                pass
-            else:
-                Qchains.append(qchains)
-                Qnear.append(qnear)
-                Fronts.append(qfronts)
-            
-            #visualize methods
-            if len(wedges) < 1:
-                pass
-            else:
+            if visualize == True:
                 dim = cnt - 1
                 print('Q Dimension: ', dim)
                 print(label)
@@ -196,75 +73,122 @@ def computeQAnalysis2(matrix, row_headers, col_headers, label):
                 print('Q Dimension: ', dim)
                 print(label)
                 visualize_qmatrix(qmatrix)
-                #visualize_bipart_graph(bigraph)
-            #visualize methods
-            #visualize_simple_graph(incident, conj))
-            #visualize_bipart_graph(bigraph)
-              
-            cnt = cnt + 1
-        theta = theta + 0.1
-    return Qchains, Qnear, Fronts, structure
+        cnt = cnt + 1
+    #Compute Q diagnostics
+    Q = computeQ(Qchains)
+    ##Compute P diagnostic
+    P = computeP(Qchains)
+    #Compute eccentricity for each simplicie/hyper-edge
+    ecc =  Ecc(Qchains, row_headers, structure)
+    #Compute complexity of the system
+    complexity_val = complexity(Q) 
+    #Print results to command line for some simple diagnostic clues.
+    #Show visuals for computed diagnostics
+    if visualize == True:
+        #Visualize Eccentricity of Simplicies/Hyperedges
+        visualize_eccentricity(ecc)
+        visualize_retained_ecc(ecc)
+        visualize_q_percolation(Q)
+        visualize_p_percolation(P)
+        visualize_q_slice(structure, row_headers)
+    else:
+        pass
+    return Qchains, Qnear, Fronts, structure, Q, P, ecc, complexity_val
 
 
-def computeConjQAnalysis2(matrix, row_headers, col_headers, label):
+def computeConjQAnalysis(matrix, row_headers, col_headers, label, visualize=None, theta=1):
     '''
     For now we have to run an inital scan of the data to discover the structure in order
     to compute a complete structural analysis of the data. This could be shortfall of the algortithm.
     '''
     verticies = col_headers
     simplicies = row_headers
-    
+    #Return variables
     Qchains = []
     Qnear = []
     Fronts = []
-    
-    normalized_matrix = normPositive(matrix)
-    theta = 0.1
-    while theta <= 1.0:
-        incident = incidentMatrix(matrix, theta=theta)
-        conj = computeConjugate(incident)
-        
-        #Swap values
-        incident = conj
-        conj = computeConjugate(incident)
-        
-        qface = computeQFace(incident, conj)
-        qmatrix = computeQMatrix(qface)
-        structure = computeQStruct(qmatrix)
-        
-        cnt = 1
-        while cnt <= max(structure):
-            qface = computeQMatrix(qface)
-            #graph methods
-            wedges = construct_weighted_graph(qface, verticies)
-            #simplicial complex  methods
-            qchains = computeEqClasses(wedges)
-            qnear = computeQNear(wedges)
-            qfronts = computeFronts(qnear)
-            
-    
-            #Retain these attributes
-            if len(wedges) < 1:
-                pass
-            else:
-                Qchains.append(qchains)
-                Qnear.append(qnear)
-                Fronts.append(qfronts)
-            
-            #visualize methods
-            if len(wedges) < 1:
-                pass
-            else:
+    #rotate the incident matrix to get the 
+    incident = incidentMatrix(matrix, theta=theta)
+    conj = computeConjugate(incident)
+    incident = conj
+    conj = computeConjugate(incident)
+    #Compute the Q-analysis on the conjugate
+    qface = computeQFace(incident, conj)
+    qmatrix = computeQMatrix(qface)
+    structure = computeQStruct(qmatrix)
+    cnt = 1
+    while cnt <= max(structure):
+        qface = computeQMatrix(qface)
+        #graph methods
+        wedges = construct_weighted_graph(qface, verticies)
+        #simplicial complex  methods
+        qchains = computeEqClasses(wedges)
+        qnear = computeQNear(wedges)
+        qfronts = computeFronts(qnear)
+        #Retain these attributes
+        if len(wedges) < 1:
+            pass
+        else:
+            Qchains.append(qchains)
+            Qnear.append(qnear)
+            Fronts.append(qfronts)
+        #visualize methods
+        if len(wedges) < 1:
+            pass
+        else:
+            if visualize == True:
                 dim = cnt - 1
                 print('Q Dimension: ', dim)
-                print(label)
                 visualize_weighted_graph(wedges)
                 print('Q Dimension: ', dim)
-                print(label)
                 visualize_conjugate(qmatrix)
                 #visualize_simple_graph(incident, conj))
                 #visualize_bipart_graph(bigraph)
-              
-            cnt = cnt + 1
-        theta = theta + 1
-    return Qchains, Qnear, Fronts, structure
+        cnt = cnt + 1
+    #Compute Q diagnostics
+    Q = computeQ(Qchains)
+    ##Compute P diagnostic
+    P = computeP(Qchains)
+    #Compute eccentricity for each simplicie/hyper-edge
+    ecc =  Ecc(Qchains, verticies, structure)
+    #Compute complexity of the system
+    complexity_val = complexity(Q) 
+    #Print results to command line for some simple diagnostic clues.
+    if visualize == True:
+        visualize_eccentricity(ecc)
+        visualize_retained_ecc(ecc)
+        visualize_q_percolation(Q)
+        visualize_p_percolation(P)
+        visualize_q_slice(structure, verticies)
+    else:
+        pass
+    return Qchains, Qnear, Fronts, structure, Q, P, ecc, complexity_val
+
+
+#These two functions provide methods for computing the q-analysis over multiple slicing 
+#parameters and dimensions. These are used when you need to compute over all possible
+#system configurations given in the hyper-edge set.
+#The computeNormQ is the traiditonal Q
+def computeNormalizedQ(matrix, row_headers, col_headers, label, visualize, theta=0.1):
+    normalized_matrix = normPositive(matrix)
+    dim = {}
+    while theta < 1:
+        data = computeQAnalysis(normalized_matrix, row_headers, col_headers, label, visualize=visualize, theta=theta)
+        print(data)
+        dex = int(theta)*10
+        dim[dex] = data[0]
+        theta = theta + theta
+    return dim
+
+
+#This function computes the conjugate complex over all slicing and dimensional levels.
+def computeNormalizedConj(matrix, row_headers, col_headers, label, visualize, theta=0.1):
+    normalized_matrix = normPositive(matrix)
+    dim = {}
+    while theta < 1:
+        data = computeConjQAnalysis(normalized_matrix, row_headers, col_headers, label, visualize=visualize, theta=theta)
+        dex = int(theta)*10
+        dim[dex] = data[0]
+        theta = theta + theta
+    return dim
+    
