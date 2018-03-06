@@ -22,7 +22,7 @@ setup(name='hypergraphtk',
       install_requires=[
           'spacy',
           'dataset',
-          'stuf'
+          'stuf',
           'seaborn',
           'wikipedia',
           'networkx',
