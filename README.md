@@ -1,6 +1,17 @@
-# HyperGraph: An Embedded Distributed Application Framework for the Study and Design of Intelligent Systems
+# HyperGraph Toolkit 
 
 ## Overview
+The HyperGraph toolkit is Python 3 module developed to support the use of hypernetworks, hypergraphs and Q-analysis for research in language, complex event detection and artificial intelligence. 
+
+The toolkit provides methods for collecting text data from open media sources such as websites, RSS, and wikipedia. There are also some tools for accessing twitter data, yelp and Facebook. 
+
+The Spacy.io NLP framework provides options for natural language processing. The toolkit provides additional methods built on spacy for generating representations for language classification and topic analysis. 
+
+New features include a multi-criteria decision analysis algorithm that uses Q-analysis to rank preferences given a mapping between a weighted input vector and decision space (representation).
+
+Current work is focused on ideological profiling to predict voting and consumer behavior. Additional work is being carried out to study infrastructure planning impacts on property values. 
+
+## Background
 Improvements in computational processing speed has unleashed a flood of research into  the application of topology to a range of complex, n-dimensional systems problems. This has lead to major breakthroughs in medical diagnostics, computer graphics, decision-science, systems design, and artificial intelligence. Despite a growing body of research stretching back to the 1930s, there are surprisingly few computing frameworks that specifically support topological data analysis (TDA). 
 
 **HyperGraph** is a lightweight, experimental computing framework that implements a polyhedral dynamics approach to the study of ontological assemblages and artifical intelligence. In particular, HyperGraph provides a software implementation of Johnson's hypernetwork theory (Johnson 2014; 2016) and Atkin's Q-analysis (Atkin 1974; 1977). HyperGraph’s use of simplicial families and complexes, makes it suitable as a general computing framework for studying a diverse set of complex systems, including natural language. 
