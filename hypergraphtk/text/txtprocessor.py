@@ -1,29 +1,10 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Thu Nov  2 12:26:05 2017
-
-@author: justinsmith
-
-These functions provide simple interfaces to basic language processing methods offered
-by the Spacy.io NLP Framework. Other NLP systems may provide better/faster preprocessing
-methods. However, these methods provide simple tokenization method, token count, and 
-bag-of-words. 
-
-"""
-import csv
 import spacy
 
 
 class TxtProcessor:
     def __init__(self):
         # Initialize a Spacy object
-        self.nlp = spacy.load('en_core_web_sm')
-        # If not using Spacy builtin stopwords list, use this file to create
-        # a stopwords list. Note: may be removed in future versions.
-        file = open('data/stopwords.csv', 'r')
-        rfile = csv.reader(file)
-        self.stop_words = [j[0] for j in rfile]
+        self.nlp = spacy.load('en')
 
     # The methods below are a list of helper functions to split up a stream of text.
     # Atomize and tokens are optional standalone tools. They can be used
@@ -39,12 +20,11 @@ class TxtProcessor:
 
     def tokens(self):
         # define characters that need removed
+        # method is uncessary if using the extract_tokens_pos method
         stop_char = ['=', '(', ')', '/', ':', ';', ',', '?', '|' '"', '[', ']']
         clean = [i for i in self.txt_atoms if i not in stop_char]
         cleanwords = ''.join(clean)
-        text_list = [i.replace('.', ' ') for i in cleanwords if i not in self.stop_words]
-        self.cleanwords = ''.join(text_list)
-        return self.cleanwords
+        return cleanwords
 
     # Primary Spacy.io based methods for basic text processing
     # Steps include load text or sequence
@@ -98,7 +78,7 @@ class TxtProcessor:
         for i in phrase:
             data = i.split(' ')
             for j in data:
-                if j in self.stop_words:
+                if j.is_stop is True:
                     data.remove(j)
                 else:
                     pass
@@ -106,15 +86,82 @@ class TxtProcessor:
             clean_phrases.append(cdata)
         return clean_phrases
 
+    # This method extracts words or tokens from the noun_phrase spacy function
+    # The results are typically cleaner than the raw tokenizer
+    def extract_tokens_np(self):
+        clean_tokens = []
+        phrases = []
+        # iterate through the phrases
+        for np in self.data.noun_chunks:
+            struct = (np.text)
+            phrases.append(struct)
+        # Now phrases are string objects instead of spacy objects
+        for i in phrases:
+            # Iterate and split phrases with more than one word
+            j = i.split(' ')
+            # Iterate through split phrases
+            for k in j:
+                # check if word is a stop word, pass if true
+                if k.is_stop is True:
+                    pass
+                else:
+                    clean_tokens.append(k)
+        return clean_tokens
+
+
+    # Token extraction using the Spacy POS tagger
+    # Perhaps the cleanest method for extracting noun-phrases in text
+    # Allows greater control of the types of patterns that can be retained.
+    def extract_tokens_pos(self):
+        tokens = []
+        data = self.pos_tags()
+        # Define tags to retain
+        tags = ['NOUN', 'VERB', 'ADJ']
+        # Define additional stop words on the fly
+        stop_fly = ['is', 'be', 'am', 'were', 'been', 'are', 'was', "'s", "'d", "'re", "'t"]
+        for i in data:
+            if i[1] in tags:
+                if i[0] in stop_fly:
+                    pass
+                else:
+                    tokens.append(i[0])
+            else:
+                pass
+
+        return tokens
+
+    # Rank words using the POS phrase extraction method
+    def rank_words_phrases(self):
+        tokens = {}
+        words = self.extract_tokens_pos()
+        phrases = self.noun_phrase()
+        word_set = sorted(set(words))
+        for i in word_set:
+            tokens[i] = words.count(i)
+        # This method computes the value of tokens in a phrase
+        # Given the new token value the
+        for i in phrases:
+            j = i.split(' ')
+            vals = []
+            for k in j:
+                val = words.count(k)
+                vals.append(val)
+            if sum(vals) > 0:
+                tokens[i] = str(sum(vals) / len(vals))
+            else:
+                pass
+        return tokens
+
+
     # Rank words by occurrence in a text
-    def rank_words(self):
-        roots = list(self.word_roots())
-        root_set = sorted(set(roots))
+    def rank_words(self, tokens):
+        root_set = sorted(set(tokens))
         counts = {}
         for i in root_set:
-            val = roots.count(i)
+            val = tokens.count(i)
             counts[i] = val
         return counts
+
 
     # Rank phrases based on occurrence of phrase words throughout a text.
     def rank_phrases(self):

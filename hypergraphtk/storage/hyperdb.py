@@ -1,16 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Feb 28 14:38:01 2018
-
-@author: justinsmith
-
-HyperDb is a simply a set of functions for using SQL and the dataset  module 
-for constructing and storing hypergraph representations of data. More specifically, 
-these are hypernetwork representations as the hypergraphs contain weighted 
-vertices for a given hyperedge.
-
-"""
 import dataset
 from stuf import stuf
 
@@ -45,13 +32,16 @@ class hyperdb:
 
     def add_hyperedge(self, title, hyperedge, vertex, value):
         # Add entry to db
-        table = self.db['hypergraph']
-        table.insert(dict(title=title, hyperedge=hyperedge, vertex=vertex, value=value))
-        # Add hyperedge to hyperedge table
-        self.update_edge_set(hyperedge)
-        # Add vertex to vertex table
-        self.update_vertex_set(vertex)
-        return
+        if len(vertex) > 0:
+            table = self.db['hypergraph']
+            table.insert(dict(title=title, hyperedge=hyperedge, vertex=vertex, value=value))
+            # Add hyperedge to hyperedge table
+            self.update_edge_set(hyperedge)
+            # Add vertex to vertex table
+            self.update_vertex_set(vertex)
+            return
+        else:
+            pass
 
     def update_edge_set(self, hyperedge):
         # Check if edge exists in hyperedges table
@@ -102,10 +92,17 @@ class hyperdb:
         return results
 
     def get_matrix(self):
-        # Constrct matrix repreentation of the data
+        # Construct matrix repreentation of the data
+        # The matrix construction is required for performing the Q-analysis
         vertex_set = self.get_vertex_set()
         hyperedge_set = self.get_hyperedge_set()
         matrix = []
         for i in hyperedge_set:
             row = [0] * len(vertex_set)
+            vertices = self.get_edge_vertices(i)
+            for j in vertices:
+                loc = vertex_set.index(j['vertex'])
+                row[loc] = j['value']
+            matrix.append(row)
+        return matrix
             
