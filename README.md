@@ -12,13 +12,13 @@ New features include a multi-criteria decision analysis algorithm that uses Q-an
 Current work is focused on ideological profiling to predict voting and consumer behavior. Additional work is being carried out to study infrastructure planning impacts on property values. 
 
 ## Installation
-Clone or download the package
-Create a virtual environment
-Launch the virtual environment
-cd into the hypergraphtk package
-pip install .
-python -m space.en.download --force
-Done!!!
+* Clone or download the package
+* Create a virtual environment
+* Launch the virtual environment
+* cd into the hypergraphtk package
+* pip install .
+* python -m space.en.download --force
+* Done!!!
 
 ## Background
 Improvements in computational processing speed has unleashed a flood of research into  the application of topology to a range of complex, n-dimensional systems problems. This has lead to major breakthroughs in medical diagnostics, computer graphics, decision-science, systems design, and artificial intelligence. Despite a growing body of research stretching back to the 1930s, there are surprisingly few computing frameworks that specifically support topological data analysis (TDA). 
