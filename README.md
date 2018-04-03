@@ -22,7 +22,7 @@ Run
 * pip install .
 * python -m spacy.en.download --force
 
-### Done!!!
+**Done!!!**
 
 ## Background
 Improvements in computational processing speed has unleashed a flood of research into  the application of topology to a range of complex, n-dimensional systems problems. This has lead to major breakthroughs in medical diagnostics, computer graphics, decision-science, systems design, and artificial intelligence. Despite a growing body of research stretching back to the 1930s, there are surprisingly few computing frameworks that specifically support topological data analysis (TDA). 
