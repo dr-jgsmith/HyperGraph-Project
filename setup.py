@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='hypergraphtk',
-      version='0.02',
+      version='0.01',
       description='Toolkit for computing with hypergraphs and hypernetworks',
       classifiers=[
           'Development Status :: 1 - Alpha',
@@ -23,7 +23,7 @@ setup(name='hypergraphtk',
       install_requires=[
           'spacy',
           'dataset',
-          'stuf'
+          'stuf',
           'seaborn',
           'wikipedia',
           'networkx',
