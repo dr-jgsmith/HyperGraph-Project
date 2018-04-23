@@ -18,12 +18,13 @@ setup(name='hypergraphtk',
                 'hypergraphtk.dataminer',
                 'hypergraphtk.storage',
                 'hypergraphtk.scripts',
+                'hypergraphtk.scripts.notebooks',
                 'hypergraphtk.text',
                 'hypergraphtk.visual'],
       install_requires=[
           'spacy',
           'dataset',
-          'stuf'
+          'stuf',
           'seaborn',
           'wikipedia',
           'networkx',
@@ -32,7 +33,7 @@ setup(name='hypergraphtk',
           'twitter',
           'dbfread',
           'googlemaps',
-          'praw'
+          'praw',
           'numba'
 
       ],
