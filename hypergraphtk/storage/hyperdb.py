@@ -105,4 +105,4 @@ class hyperdb:
                 row[loc] = j['value']
             matrix.append(row)
         return matrix
-            
+

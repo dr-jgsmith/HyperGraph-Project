@@ -159,4 +159,58 @@ def visualize_conjugate(conj):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
+
+
+def visualize_pri_histogram(ranking, theta):
+    labels = [i[0] for i in ranking.items()]
+    values = [i[1] for i in ranking.items()]
+    y_pos = np.arange(len(labels))
+    plt.bar(y_pos, values, align='center')
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Preference Ranking Score')
+    plt.title('Preference Ranking Index')
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(10, 8)
+    plt.show()
+
+
+def visualize_pri_line(ranking, theta):
+    labels = [i[0] for i in ranking.items()]
+    values = [i[1] for i in ranking.items()]
+    y_pos = np.arange(len(labels))
+    plt.plot(y_pos, values, "s-")
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Preference Ranking Score')
+    plt.title('Preference Ranking Index')
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(10, 8)
+    plt.show()
+
+
+def visualize_psi_histogram(psi, theta):
+    labels = [i[0] for i in psi.items()]
+    values = [i[1] for i in psi.items()]
+    y_pos = np.arange(len(labels))
+    plt.bar(y_pos, values, align='center')
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Preference Satisfaction Score')
+    plt.title('Preference Satisfaction Index')
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(10, 8)
+    plt.show()
+
+
+def visualize_psi_line(psi, theta):
+    labels = [i[0] for i in psi.items()]
+    values = [i[1] for i in psi.items()]
+    y_pos = np.arange(len(labels))
+    plt.plot(y_pos, values, "o-")
+    plt.xticks(y_pos, labels)
+    plt.ylabel('Preference Satisfaction Score')
+    plt.title('Preference Satisfaction Index')
+    fig = matplotlib.pyplot.gcf()
+    fig.set_size_inches(10, 8)
+    plt.show()
+
+
+

@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='hypergraphtk',
-      version='0.01',
+      version='0.02',
       description='Toolkit for computing with hypergraphs and hypernetworks',
       classifiers=[
           'Development Status :: 1 - Alpha',
@@ -23,13 +23,18 @@ setup(name='hypergraphtk',
       install_requires=[
           'spacy',
           'dataset',
-          'stuf',
+          'stuf'
           'seaborn',
           'wikipedia',
           'networkx',
           'lxml',
           'feedparser',
-          'twitter'
+          'twitter',
+          'dbfread',
+          'googlemaps',
+          'praw'
+          'numba'
+
       ],
       include_package_data=True,
       zip_safe=False)

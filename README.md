@@ -17,7 +17,7 @@ Current work is focused on ideological profiling to predict voting and consumer 
 * Launch the virtual environment
 * cd into the hypergraphtk package
 
-Run
+**Run**
 
 * pip install .
 * python -m spacy.en.download --force

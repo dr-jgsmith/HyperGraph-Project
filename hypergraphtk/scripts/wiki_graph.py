@@ -10,10 +10,12 @@ Phrases and values are then uploaded to the hyperdb.
 from hypergraphtk.dataminer.wikidata import wikidata
 from hypergraphtk.storage.hyperdb import hyperdb
 from hypergraphtk.text.txtprocessor import TxtProcessor
+from hypergraphtk.core.mcqda import *
 
 wiki = wikidata()
 process = TxtProcessor()
 db = hyperdb()
+
 
 def phrase_ranker(content):
     # Phrase ranker ranks phrases in a document
@@ -117,7 +119,6 @@ def rank_wiki_word_phrases(topic):
         return None
 
 
-
 def search_list(topic_list):
     topics = []
     for topic in topic_list:
@@ -132,10 +133,13 @@ def search_list(topic_list):
 
     return
 
-topic_list = ['finance', 'disaster', 'famine', 'disease', 'war', 'petroleum']
-search_list(topic_list)
+#topic_list = ['finance', 'disaster', 'famine', 'disease', 'war', 'petroleum']
+#search_list(topic_list)
 #rank_wiki_words('finance')
-# = db.get_matrix()
-#print(x)
-#v = db.get_vertex_set()
-#print(v)
+x = db.get_matrix()
+print(x)
+v = db.get_vertex_set()
+
+h = db.get_hyperedge_set()
+print(h)
+
