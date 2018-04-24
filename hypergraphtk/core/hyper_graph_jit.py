@@ -168,6 +168,14 @@ def computeQStruct(qmatrix):
     q_vector = matrix.diagonal()
     return q_vector
 
+@jit
+def computeSparseQ(incident):
+    incident_transpose = incident.transpose()
+    shared_face_matrix = np.matmul(incident, incident_transpose)
+    E = np.ones(shared_face_matrix.shape).astype(int)
+    qmatrix = np.subtract(shared_face_matrix, E)
+    return qmatrix
+
 
 # Step 6: This is step converts the qmatrix into a weighted graph
 # The weighted graph can then be used to compute qnear simplicies (shortest path and all connected components)
@@ -185,6 +193,7 @@ def construct_weighted_graph(shared_face, hyperedge_set, vertex_set, conjugate=F
     print("Extracting weighted edges")
     edges = [(hyperedges[i[0]], hyperedges[i[1]], shared_face[i[0]][i[1]]) for i in nx.edges(G)]
     return edges
+
 
 # Step 7. Use the weighted graph to compute homotopy equivalence classes.
 # These are the q-connected components.
@@ -246,6 +255,7 @@ def computeQ(qstruct_set):
         dim = dim + 1
     return qstruct
 
+
 # Compute the eccentricity of each simplex in the complex.
 # This measures how integrated a simplex is in the complex.
 # Note: it would be interesting to compute a similar diagnostic for simplex persistence at each q-dim.
@@ -298,36 +308,49 @@ class hypergraph_jit:
 
     # The computeSimpleQ method provides simplified version of the computeQanalysis method
     def computeSimpleQ(self, matrix, theta, norm_matrix=False, conjugate=False):
+        try:
+            incident = incidentMatrix(matrix, theta, norm=norm_matrix, less_than=False)
 
-        incident = incidentMatrix(matrix, theta, norm=norm_matrix, less_than=False)
+            if conjugate is False:
+                pass
+            else:
+                incident = computeConjugate(incident)
 
-        if conjugate is False:
+            print(incident)
+
+            #qmatrix = computeSparseQ(incident)
+
+            incident_transpose = computeConjugate(incident)
+            # Matrix multiplication is resource intensive
+            shared_face_matrix = computeQFace(incident, incident_transpose)
+            print(shared_face_matrix)
+
+            qmatrix = computeQMatrix(shared_face_matrix)
+            print("Q Matrix :", qmatrix)
+
+            strct = computeQStruct(qmatrix)
+            print("Structure vector computed: ", strct)
+            edges = construct_weighted_graph(shared_face_matrix, self.hyperedge_set, self.vertex_set,  conjugate=conjugate)
+            print("Edges computed")
+            # simplicial complex  methods
+            qchains = computeEqClasses(edges)
+            print('Classes computed. Num of connected components: ', len(qchains))
+            # qnear = self.computeQNear(wedges)
+            # print('Neighbors computed ')
+            # qfronts = self.computeFronts(qnear)
+            return qmatrix, qchains, strct
+        except MemoryError:
+            print('Memory Error')
             pass
-        else:
-            incident = computeConjugate(incident)
-
-        print(incident)
-
-        incident_transpose = computeConjugate(incident)
-        # Matrix multiplication is resource intensive
-        shared_face_matrix = computeQFace(incident, incident_transpose)
-        print(shared_face_matrix)
-
-        qmatrix = computeQMatrix(shared_face_matrix)
-        print("Q Matrix :", qmatrix)
-
-        strct = computeQStruct(qmatrix)
-        print("Structure vector computed: ", strct)
-        edges = construct_weighted_graph(shared_face_matrix, self.hyperedge_set, self.vertex_set,  conjugate=conjugate)
-        print("Edges computed")
-        # simplicial complex  methods
-        qchains = computeEqClasses(edges)
-        print('Classes computed. Num of connected components: ', len(qchains))
-        # qnear = self.computeQNear(wedges)
-        # print('Neighbors computed ')
-        # qfronts = self.computeFronts(qnear)
-
-        return qmatrix, qchains, strct
+        except RuntimeError:
+            print('Runtime Error')
+            pass
+        except TypeError:
+            print('Type Error')
+            pass
+        except NameError:
+            print('Name Error')
+            pass
 
 
     # This system provides the individual computational methods for performing multi-level systems analysis.

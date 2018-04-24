@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='hypergraphtk',
-      version='0.02',
+      version='0.04',
       description='Toolkit for computing with hypergraphs and hypernetworks',
       classifiers=[
           'Development Status :: 1 - Alpha',
@@ -18,7 +18,7 @@ setup(name='hypergraphtk',
                 'hypergraphtk.dataminer',
                 'hypergraphtk.storage',
                 'hypergraphtk.scripts',
-                'hypergraphtk.scripts.notebooks',
+                'hypergraphtk.notebooks',
                 'hypergraphtk.text',
                 'hypergraphtk.visual'],
       install_requires=[
