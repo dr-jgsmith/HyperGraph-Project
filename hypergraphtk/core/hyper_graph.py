@@ -1,384 +1,619 @@
-"""
-Created on Mon Jan 29 19:22:42 2018
-
-@author: justinsmith
-
-HyperGraph Core 
-
-This file contains the core q-analysis function set. 
-These functions include HyperGraph -  Q-Analysis Function Set. 
-The function follow in a linear fashion, where each function represents a set 
-in the process of q-analysis. The first two functions are however, optional. 
-
-"""
+from numba import jit
 import numpy as np
+from scipy.sparse import csr_matrix, csgraph
 import networkx as nx
-from collections import defaultdict
+"""
+These functions use the Numba JIT compiler to speed up computational performance on
+large data arrays and matrices. These are particularly useful for massive matrix multiplication
+problems.
+
+This is a work in progress!!! Changes will be made...
+
+"""
 
 
-class hypergraph:
-    def __init__(self, hyperedge_set, vertex_set):
-        self.hyperedge_set = hyperedge_set
-        self.vertex_set = vertex_set
-        self.normed_matrix = []
-        self.incident = []
-        self.incident_transpose = []
-        self.qmatrix = []
+def compute_pattern(traffic_pattern_list, incidence):
+    """
+    In Q-Analysis it is often the case that we want to analyze the dynamics that occur on a representation/backcloth
+    This is computed by multiplying the pattern vector on the incidence matrix of 0s and 1s.
+    Here the pattern vector correspond to the vertices.
 
-    # Optional: Step 0
-    def vector_weights(self, vector_dict, matrix):
-        # This method combines a vector of weights and a matrix (pre-normalized)
-        # These weights can be defined on specific simplicies as a dictionary of simplicies and their weighted value
-        # However, weights can be generated based on a rule or probability distribution.
-        # get values for the weights
-        wght = [i[1] for i in vector_dict.items()]
-        # convert vector weights into a numpy array
-        vweights = np.array(wght)
-        # convert matrix to a numpy array
-        vmatrix = np.array(matrix)
-        # multiply the v-weights and numpy array (matrix)
-        new_matrix = vweights * vmatrix
-        return new_matrix
+    convert vector weights into a numpy array
 
-    # Optional: Step 0
-    def normPositive(self, matrix):
-        # Normalize a matrix given a raw set of values. This produces a positive value.
-        # Optional transformation of input matrix given a set of raw values. This function is
-        # typically used in conjunction with a vector of weights.
-        normed_matrix = []
-        for i in matrix:
-            x = max(i)
-            y = min(i)
-            row = []
-            for j in i:
-                a = (j - y) / (x - y)
-                row.append(a)
-            normed_matrix.append(row)
-        self.normed_matrix = np.vstack(normed_matrix)
-        return self.normed_matrix
-
-    # Optional: Step 0
-    def normNeg(self, matrix):
-        # Normalize a matrix given a raw set of values. This produces a negative value.
-        # Optional transformation of input matrix given a set of raw values. This function is
-        # typically used in conjunction with a vector of weights. This is used when negative value
-        # is desirable as a criteria.
-        normed_matrix = []
-        for i in matrix:
-            x = max(i)
-            y = min(i)
-            row = []
-            for j in i:
-                a = (x - j) / (x - y)
-                row.append(a)
-            normed_matrix.append(row)
-        return normed_matrix
-
-    # Optional: Step 0
-    # Note this step can be repeated
-    def computePatternV(self, traffic_pattern, incidence):
-        # In Q-Analysis it is often the case that we want to analyze the dynamics that occur on a representation/backcloth
-        # This is computed by multiplying the pattern vector on the incidence matrix of 0s and 1s.
-        # Here the pattern vector correspond to the vertices.
-        #wght = [i[1] for i in traffic_pattern.items()]
-        # convert vector weights into a numpy array
-        vweights = np.array(traffic_pattern)
+    :param traffic_pattern_list: ordered list of values
+    :param incidence: numpy matrix
+    :return: numpy matrix
+    """
+    try:
+        vweights = np.array(traffic_pattern_list)
         # convert matrix to a numpy array
         vmatrix = np.array(incidence)
         # multiply the v-weights and numpy array (matrix)
         new_matrix = vweights * vmatrix
         # The new_matrix can now be processed again by passing the matrix to the incidentMatrix method
         return new_matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
 
-    # Step 1: Construct Incidence Matrix from a given matrix and threshold or slicing parameter.
-    def incidentMatrix(self, matrix, theta, norm=False, less_than=False):
-        # This function provides a basic method for describing a relation between two sets that
-        # have been computed as a MxN matrix of values that map to simplicies (rows) and vertices (columns).
-        # The theta value represents a threshold parameter for defining the partition of the matrix into
-        # 0's and 1's.
-        if norm is True:
-            new_matrix = self.normPositive(matrix)
+def add_cover_pattern(cover_array, incidence):
+    """
+    This function is used to add a new dimension of relation to a given matrix composed of simplicies and vertices.
+    This is accomplished by the addition between two vectors.
+
+    :param cover_array: numpy array
+    :param incidence: numpy array
+    :return: numpy array
+    """
+    try:
+        cover = np.array(cover_array)
+        matrix = np.array(incidence)
+        new_matrix = cover + matrix
+        return new_matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
+
+
+@jit
+def invert_pattern(pattern_vector):
+    """
+    Takes a pattern vector in binarized format and inverts the pattern
+    :param pattern_vector: numpy array | 0's and 1's
+    :return: numpy array
+    """
+    inverted = np.zeros(len(pattern_vector))
+    for i in range(len(pattern_vector)):
+        if pattern_vector[i] == 0.0:
+            inverted[i] = 1.0
         else:
-            new_matrix = matrix
+            inverted[i] = 0.0
+    return inverted
 
-        incident = []
-        if less_than is True:
-            for j in new_matrix:
-                k = np.piecewise(j, [j > theta, j <= theta], [0, 1])
-                incident.append(k)
-        else:
-            for j in new_matrix:
-                k = np.piecewise(j, [j > theta, j <= theta], [1, 0])
-                incident.append(k)
 
-        self.incident = np.vstack(incident)
+@jit
+def invert_matrix(matrix):
+    inv_matrix = ['x']
+    for i in matrix:
+        inv = invert_pattern(i)
+        inv_matrix.append(inv)
+    return np.array(inv_matrix[1:])
 
-        return self.incident
 
-    # Step 2: Compute the conjugate or transpose of the retained inicidence matrix
-    def computeConjugate(self):
-        # Compute the conjugate of the incidence matrix
-        self.incident_transpose = self.incident.transpose()
-        return self.incident_transpose
+@jit
+def normalize(matrix):
+    normed = ['x']
+    for i in range(len(matrix)):
+        row = []
+        for j in range(len(matrix[i])):
+            val = (matrix[i][j] - min(matrix[:, j])) / (max(matrix[:, j]) - min(matrix[:, j]))
+            row.append(val)
+        normed.append(row)
+    return np.array(normed[1:])
 
-    # Step 3: Multiply the incidence by its transpose - BxB^T
-    # This produces the shared-faced-matrix of the incidence and its transpose
-    def computeQFace(self):
-        # Multiply the incidence matrix by its transpose
-        shared_face_matrix = np.matmul(self.incident, self.incident_transpose)
-        return shared_face_matrix
 
-    # Step 4: Compute the Q Matrix by subtracting 1 from each value in the matrix
-    def computeQMatrix(self, shared_face_matrix):
-        # compute the Q-Matrix as the shared face matrix minus E
-        E = np.ones(shared_face_matrix.shape).astype(int)
-        qmatrix = np.subtract(shared_face_matrix, E)
-        return qmatrix
+@jit
+def compute_incident(value_matrix, theta, slice_type='upper'):
+    if slice_type is 'upper':
+        data = value_matrix >= theta
+    else:
+        data = value_matrix <= theta
+    return data.astype(int)
 
-    # Step 5: Extract the Q Structure Vector from the Q Matrix
-    def computeQStruct(self, qmatrix):
-        # Extract the first Q Structure vector
-        matrix = np.array(qmatrix)
-        q_vector = matrix.diagonal()
-        return q_vector
 
-    # Step 6: This is step converts the qmatrix into a weighted graph
-    # The weighted graph can then be used to compute qnear simplicies (shortest path and all connected components)
-    def construct_weighted_graph(self, shared_face, conjugate=False):
-        """
-        Takes the shared-face matrix q-1 computed during a q-analysis sequence.
-        the ij value of a in A corresponds to the the weighted relation between two simplicies.
-        """
-        if conjugate is False:
-            hyperedges = self.hyperedge_set
-        else:
-            hyperedges = self.vertex_set
+def sparse_graph(incidence, theta):
+    """
+    This function encodes a sparse matrix into a graph representation.
+    This function provides a speed up in computation over the numpy matrix methods
+    It can be used on both a shared face matrix or raw data input.
 
-        G = nx.from_numpy_matrix(shared_face)
-        print("Extracting weighted edges")
-        edges = [(hyperedges[i[0]], hyperedges[i[1]], shared_face[i[0]][i[1]]) for i in nx.edges(G)]
+    :param incidence: numpy incidence matrix
+    :param hyperedge_list: python list | simplicies or nodes
+    :param theta: int
+    :return: list of tuples
+    """
+    try:
+        sparse = np.nonzero(incidence)
+        edges = [(simplex, vertex, incidence[simplex][vertex]) for simplex, vertex in zip(sparse[0], sparse[1]) if incidence[simplex][vertex] >= float(theta)]
         return edges
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
-    # Step 7. Use the weighted graph to compute homotopy equivalence classes.
-    # These are the q-connected components.
-    # This is central data type for exploring multi-dimensional persistence of Eq Classes
-    def computeEqClasses(self, edges):
-        # Collect all connected components
-        # Identify equivelence classes
+
+def dowker_relation(sparse_graph):
+    """
+    This provides a fast approach to computing the shared-face relation between simplicies.
+    The function takes a sparse graph and its conjugate as inputs. Returns the dwoker relation + 1.
+    To compute the true relation, subtract the -1 from the relation.
+
+    :param sparse_graph: list of tuples
+    :param conjugate_graph: list of tuples
+    :return: numpy matrix
+    """
+    try:
+        sparseg = compute_graph_matrix_sparse(sparse_graph)
+        conjq = sparseg.transpose()
+        q_matrix = sparseg.dot(conjq).toarray()
+        q_matrix = np.subtract(q_matrix, 1)
+        return q_matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
+
+
+def compute_classes(edges):
+    """
+    Collect all connected components - Identify equivelence classes
+    These are the q-connected components.
+    This is central data type for exploring multi-dimensional persistence of Eq Classes
+    Takes a list of tuple edges
+    :param edges: sparse graph
+    :return: list of sets
+    """
+    try:
         G = nx.Graph()
         G.add_weighted_edges_from(edges)
         comp = nx.connected_components(G)
-        return list(comp)
+        return  sorted(list(comp))
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
-    # Step 8. Compute the q-near simplicies for constructing the Transmission Front paths for each simplex.
-    def computeQNear(self, edges):
-        G = nx.Graph()
-        G.add_weighted_edges_from(edges)
-        qnear = dict(nx.all_pairs_shortest_path(G))
-        return qnear
 
-    # Step 9. Compute the transmission fronts.
-    # This is important and interesting property of the q-analysis method
-    # Transmission fronts can be used to compute flows given the shared dimensions between simplicies in the path.
-    def computeFronts(self, qnear):
-        t_fronts = {}
-        for i in qnear.items():
-            front_list = []
-            fronts = defaultdict(list)
-            for j in i[1].items():
-                dim = len(j[1]) - 1
-                fronts[dim].append(j[0])
-            [front_list.append(k[1]) for k in fronts.items()]
-            t_fronts[i[0]] = front_list
-        return t_fronts
+def compute_class_graph(comp_list):
+    """
+    The ith value in the graph repreents the simplicial complex, will the jth value represents the simplex it is attached to the dimension.
+    :param comp_list: a list of sets representing connected simplicies
+    :return: graph representation with component indexed by location in the complex set
+    """
+    try:
+        class_graph = [(i, j, 1) for i in range(len(comp_list)) for j in comp_list[i]]
+        return class_graph
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
-    # Step 9. Compute the transmission fronts.
-    # This is important and interesting property of the q-analysis method
-    # Transmission fronts can be used to compute flows given the shared dimensions between simplicies in the path.
-    def computeFronts2(self, qnear):
-        t_fronts = {}
-        for i in qnear.items():
-            front_list = []
-            fronts = defaultdict(list)
-            for j in i[1].items():
-                dim = len(j[1]) - 1
-                fronts[dim].append(j[0])
-            [front_list.append(k[1]) for k in fronts.items()]
-            t_fronts[i[0]] = front_list
-        return t_fronts
 
-    # The next set of methods are used for computing diagnostic measures.
-    # Compute the P-Structure vector of the complex.
-    # The P-structure vector is used to measure the number of simplicies for a given q-dimension
-    # This method takes a set of Q-Structure vectors that are computed for each q-dimension
-    def computeP(self, qstruct_set):
-        pstruct = {}
-        dim = 0
-        for i in qstruct_set:
-            val = 0
-            for j in i:
-                val = len(j) + val
-            pstruct[dim] = val
-            dim = dim + 1
-        return pstruct
+def compute_graph_matrix(sparse_graph):
+    """
+    Takes the constructed graph of a matrix of simplicial complexes and computes the sparse representation
+    :param class_graph: list of tuples
+    :return: dense matrix
+    """
+    try:
+        row = np.array([i[0] for i in sparse_graph])
+        col = np.array([i[1] for i in sparse_graph])
+        data = np.array([i[2] for i in sparse_graph])
+        matrix = csr_matrix((data, (row, col)), shape=(max(row)+1, max(col)+1)).toarray()
+        return matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
-    # The Q-Structure vector is used to compute the number of s-homotopy equivalence classes for each q-dimension.
-    def computeQ(self, qstruct_set):
-        qstruct = {}
-        dim = 0
-        for i in qstruct_set:
-            qstruct[dim] = len(i)
-            dim = dim + 1
-        return qstruct
 
-    # Compute the eccentricity of each simplex in the complex.
-    # This measures how integrated a simplex is in the complex.
-    # Note: it would be interesting to compute a similar diagnostic for simplex persistence at each q-dim.
-    def computeEcc(self, EqClasses, qstruct, conjugate=False):
-        if conjugate is False:
-            hyperedges = self.hyperedge_set
+def compute_graph_matrix_sparse(sparse_graph):
+    """
+    Takes the constructed graph of a matrix of simplicial complexes and computes the sparse representation
+    :param sparse_graph: list of tuples
+    :return sparse matrix
+    """
+    try:
+        row = np.array([i[0] for i in sparse_graph])
+        col = np.array([i[1] for i in sparse_graph])
+        data = np.array([i[2] for i in sparse_graph])
+        matrix = csr_matrix((data, (row, col)), shape=(max(row) + 1, max(col) + 1))
+        return matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
+
+
+@jit
+def compute_paths(sparse_matrix, simplex_index):
+    """
+    :param sparse_matrix: csr_matrix scipy
+    :param simplex_index: vector of simplex labels - integer values representing label index.
+    :return: arrays
+    """
+    seen = np.array([simplex_index])
+    fronts = [np.array([simplex_index])]
+    for i in fronts:
+        tmp = []
+        for j in i:
+            data = sparse_matrix.getrow(j).nonzero()[1]
+            new = np.setdiff1d(data, seen)
+            seen = np.union1d(new, seen)
+            tmp.extend(new)
+
+        if len(np.unique(tmp)) > 0:
+            fronts.append(np.unique(tmp))
         else:
-            hyperedges = self.vertex_set
-
-        # eccI = 2(sum(q_dim/num_simps))/(q_dim*(q_dim+1))
-        eccentricity = {}
-        for simplex in hyperedges:
-            simplex_dim = []
-            dim = 0
-            for i in EqClasses:
-                for j in i:
-                    if simplex in j:
-                        val = dim / len(j)
-                        simplex_dim.append(val)
-                    else:
-                        pass
-                    dim = dim + 1
-            # The ecc algorithm is based on the equation provided by Chin et al. 1991
-            ecc = sum(simplex_dim) / ((1 / 2 * float(max(qstruct))) * float((max(qstruct) + 1)))
-            eccentricity[simplex] = ecc
-        return eccentricity
-
-    # Compute system complexity.
-    # This is only one of many possible complexity measures and is provided by John Casti.
-    def computeComplexity(self, q_percolation):
-        strct = []
-        vect = []
-        for i in q_percolation.items():
-            x = i[0] + 1
-            y = x * i[1]
-            strct.append(y)
-            vect.append(i[1])
-        z = sum(strct)
-        complexity = 2 * (z / ((max(vect) + 1) * (max(vect) + 2)))
-        return complexity
-
-    # This system provides the individual computational methods for performing multi-level systems analysis.
-    # However, these methods are typically used together in a sequence, and required to perform a full q-analysis.
-    # The computeQanalysis automates the q-analysis of the multi-dimensional relations
-    def computeQanalysis(self, matrix, theta, norm_matrix=False, conjugate=False):
-        Qchains = []
-        Qnear = []
-        Qfronts = []
-
-        if norm_matrix is False:
-            self.incidentMatrix(matrix, theta=theta, norm=False)
-        else:
-            self.incidentMatrix(matrix, theta=theta, norm=True)
-
-        if conjugate is False:
             pass
+    return fronts
+
+@jit
+def compute_path(sparse_matrix, simplex):
+    """
+    :param sparse_matrix: csr_matrix scipy
+    :param simplex_index: vector of simplex labels - integer values representing label index.
+    :return: arrays
+    """
+    seen = np.array([simplex])
+    fronts = [np.array([simplex])]
+    for i in fronts:
+        tmp = []
+        for j in i:
+            data = sparse_matrix.getrow(j).nonzero()[1]
+            new = np.setdiff1d(data, seen)
+            seen = np.union1d(new, seen)
+            tmp.extend(new)
+
+        if len(np.unique(tmp)) > 0:
+            fronts.append(np.unique(tmp))
         else:
-            self.incident = self.computeConjugate()
+            pass
+    return fronts
 
-        self.computeConjugate()
-        shared_face_matrix = self.computeQFace()
-        self.qmatrix = self.computeQMatrix(shared_face_matrix)
-        self.strct = self.computeQStruct(self.qmatrix)
+@jit
+def sum_class_matrix(matrix, axis_val):
+    """
+    :param matrix:
+    :param axis_val:
+    :return:
+    """
+    sums = np.sum(matrix, axis=axis_val)
+    return sums
 
-        count = 1
-        while count <= max(self.strct):
-            shared_face_matrix = self.computeQMatrix(shared_face_matrix)
-            # graph methods
-            wedges = self.construct_weighted_graph(shared_face_matrix, conjugate=conjugate)
-            # simplicial complex  methods
-            qchains = self.computeEqClasses(wedges)
-            qnear = self.computeQNear(wedges)
-            qfronts = self.computeFronts(qnear)
 
-            if len(wedges) < 1:
-                pass
+@jit
+def simple_qanalysis(value_matrix, slicing_list):
+    """
+    :param value_matrix:
+    :param slicing_list:
+    :return:
+    """
+    qgraph = ['x']
+    for i in slicing_list:
+        incident = compute_incident(value_matrix, i)
+        graph = sparse_graph(incident, 1)
+        r = dowker_relation(graph)
+        graph = sparse_graph(r, 0)
+        classes = compute_classes(graph)
+        qgraph.append(classes)
+    return qgraph[1:]
+
+
+@jit
+def compute_q_structure(qgraph):
+    """
+    :param qgraph:
+    :return:
+    """
+    qstruct = ['x']
+    for i in qgraph:
+        qstruct.append(len(i))
+    return qstruct[1:]
+
+
+@jit
+def compute_p_structure(qgraph):
+    """
+    :param qgraph:
+    :return:
+    """
+    pstruct = ['x']
+    for j in qgraph:
+        tmp = []
+        for i in j:
+            tmp.append(len(i))
+        pstruct.append(sum(tmp))
+    return pstruct[1:]
+
+
+@jit
+def simple_ecc(array):
+    """
+    Compute the eccentricity of a simplex. Produced by computing the Dowker relation
+    This takes a 1d array, which is typically the simplex and q-near vertices
+
+    :param array: numpy array
+    :return: numpy array
+    """
+    loc = array.argmax()
+    new = np.delete(array, loc)
+    qhat = max(array)-1
+    qbottom = max(new)-1
+    ecc = (qhat - qbottom) / (qbottom + 1)
+    return ecc
+
+
+@jit
+def eccentricity(qmatrix):
+    """
+    takes a q-matrix computed from the dowker relation function
+    :param qmatrix: numpy array
+    :return: list of eccentricity values
+    """
+    try:
+        # iterate through the matrix to compute the
+        eccs = [simple_ecc(i) for i in qmatrix]
+        return eccs
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
+
+
+@jit
+def chin_ecc(comps, hyper_edges):
+    """
+    :param comps:
+    :param hyper_edges:
+    :return:
+    """
+    strct = len(hyper_edges) - 1
+    ecc = ['x']
+    for i in hyper_edges:
+        tmp = []
+        cnt = 0
+        for j in comps:
+            for k in j:
+                if i in k:
+                    e = cnt / len(k)
+                    tmp.append(e)
+                else:
+                    pass
+            cnt = cnt + 1
+        ecc.append(sum(tmp))
+    qmax = (1/2 * strct) * (strct + 1)
+    ecc = np.divide(ecc[1:], qmax)
+    return ecc
+
+
+@jit
+def compute_psi(value_matrix, weights, slice_list):
+    """
+    :param value_matrix:
+    :param weights:
+    :param slice_list:
+    :return:
+    """
+    psi = ['x']
+    psimax = ['x']
+    for i in slice_list:
+        incident = compute_incident(value_matrix, i)
+        data = compute_pattern(weights, incident)
+        repr = np.zeros(len(data))
+        for i in range(len(data)):
+            repr[i] = sum(data[i])
+        psi.append(repr)
+        psimax.append(sum(weights))
+
+    scores = np.array(psi[1:]).sum(axis=0)
+    maxscore = np.array(psimax[1:]).sum(axis=0)
+    psi = np.divide(scores, maxscore)
+    return psi
+
+
+@jit
+def compute_pci(value_matrix, slice_list):
+    """
+    :param value_matrix:
+    :param slice_list:
+    :return:
+    """
+    pci = ['x']
+    pcimax = ['x']
+    for i in slice_list:
+        incident = compute_incident(value_matrix, i)
+        g = sparse_graph(incident, 1)
+        Q = dowker_relation(g)
+        strct = Q.diagonal()
+        pmax = len(strct) - 1
+        tmp = np.zeros(len(strct))
+        tmax = np.zeros(len(strct))
+        for j in range(len(Q)):
+            # q = max([Q[j][i] for i in range(len(Q[j])) if i is not j])
+            q = []
+            for k in range(len(Q[j])):
+                if k is not j:
+                    q.append(Q[j][k])
+
+            if strct[j] < 0:
+                tmp[j] = 0
+                tmax[j] = pmax
             else:
-                Qchains.append(qchains)
-                Qnear.append(qnear)
-                Qfronts.append(qfronts)
-
-            count = count + 1
-
-        self.q_percolation = self.computeQ(Qchains)
-        ##Compute P diagnostic
-        self.p_percolation = self.computeP(Qchains)
-        # Compute eccentricity for each simplex/hyper-edge
-        self.eccentricity = self.computeEcc(Qchains, self.strct, conjugate=conjugate)
-        # Compute complexity of the system
-        self.complexity = self.computeComplexity(self.q_percolation)
-        return self.qmatrix, self.strct, Qchains, Qnear, Qfronts, self.q_percolation, self.p_percolation, self.eccentricity, self.complexity
+                val = strct[j] - max(q)
+                tmp[j] = val
+                tmax[j] = pmax
+        pci.append(tmp)
+        pcimax.append(tmax)
+    pci = np.array(pci[1:]).sum(axis=0)
+    pcimax = np.array(pcimax[1:]).sum(axis=0)
+    pci = np.divide(pci, pcimax)
+    return pci
 
 
-    # The computeSimpleQ method provides simplified version of the computeQanalysis method
-    def computeSimpleQ(self, matrix, theta, norm_matrix=False, conjugate=False):
+@jit
+def compute_pdi(value_matrix, slice_list):
+    """
+    :param value_matrix:
+    :param slice_list:
+    :return:
+    """
+    pdi = ['x']
+    pdimax = ['x']
+    for i in slice_list:
+        incident = compute_incident(value_matrix, i)
+        complement = invert_matrix(incident)
+        g = sparse_graph(complement, 1)
+        Q = dowker_relation(g)
+        strct = Q.diagonal()
+        pmax = len(strct) - 1
+        tmp = np.zeros(len(strct))
+        tmax = np.zeros(len(strct))
+        for j in range(len(Q)):
+            q = []
+            for k in range(len(Q[j])):
+                if k is not j:
+                    q.append(Q[j][k])
 
-        self.incidentMatrix(matrix, theta=theta, norm=norm_matrix, less_than=False)
-
-        if conjugate is False:
-            pass
-        else:
-            self.incident = self.computeConjugate()
-
-        print(self.incident)
-
-        self.computeConjugate()
-        # Matrix multiplication is resource intensive
-        shared_face_matrix = self.computeQFace()
-        print(shared_face_matrix)
-
-        self.qmatrix = self.computeQMatrix(shared_face_matrix)
-        print("Q Matrix :", self.qmatrix)
-
-        self.strct = self.computeQStruct(self.qmatrix)
-        print("Structure vector computed: ", self.strct)
-        wedges = self.construct_weighted_graph(shared_face_matrix, conjugate=conjugate)
-        print("Edges computed")
-        # simplicial complex  methods
-        qchains = self.computeEqClasses(wedges)
-        print('Classes computed. Num of connected components: ', len(qchains))
-        #qnear = self.computeQNear(wedges)
-        #print('Neighbors computed ')
-        #qfronts = self.computeFronts(qnear)
-
-        return self.qmatrix, qchains, self.strct
+            if strct[j] < 0:
+                tmp[j] = 0
+                tmax[j] = pmax
+            else:
+                val = strct[j] - max(q)
+                tmp[j] = val
+                tmax[j] = pmax
+        pdi.append(tmp)
+        pdimax.append(tmax)
+    pdi = np.array(pdi[1:]).sum(axis=0)
+    pdimax = np.array(pdimax[1:]).sum(axis=0)
+    pdi = np.divide(pdi, pdimax)
+    return pdi
 
 
-    # This method is used primarily to compute Preference Discordance Index
-    # The method computes the complement of the original incidence matrix
-    # Used to conduct an MCQA optimization
-    def computeQcompliment(self):
-        compliment = []
-        for i in self.incident:
-            row = []
-            for j in i:
-                if j == 0:
-                    row.append(1)
-                elif j == 1:
-                    row.append(0)
-                elif j == -1:
-                    row.append(0)
+def mcqa_ranking_I(psi, pci):
+    """
+    :param psi:
+    :param pci:
+    :return:
+    """
+    pri_psi = np.subtract(1, psi)
+    pri_pci = np.subtract(1, pci)
+    pri = np.add(pri_psi, pri_pci)
+    return pri
 
-            compliment.append(row)
 
-        self.incident = np.array(compliment)
-        self.computeConjugate()
-        shared_face_matrix = self.computeQFace()
-        self.qmatrix = self.computeQMatrix(shared_face_matrix)
-        self.strct = self.computeQStruct(self.qmatrix)
-        return self.incident, self.qmatrix, self.strct
+def mcqa_ranking_II(psi, pci, pdi):
+    '''
+    :param psi:
+    :param pci:
+    :param pdi:
+    :return:
+    '''
+    pri_psi = np.subtract(1, psi)
+    pri_pci = np.subtract(1, pci)
+    pri_partial = np.add(pri_psi, pri_pci)
+    pri = np.add(pri_partial, pdi)
+    return pri
+
+
+def compute_mcqa(value_matrix, criteria, slicing_list):
+    """
+    :param value_matrix:
+    :param criteria:
+    :param slicing_list:
+    :return:
+    """
+    norm = normalize(value_matrix)
+    psin = compute_psi(norm, criteria, slicing_list)
+    pcin = compute_pci(norm, slicing_list)
+    pdin = compute_pdi(norm, slicing_list)
+
+    mcq = mcqa_ranking_I(psin, pcin)
+    mcq2 = mcqa_ranking_II(psin, pcin, pdin)
+
+    return mcq, mcq2
+
+
+# Compute system complexity.
+# This is only one of many possible complexity measures and is provided by John Casti.
+def compute_complexity(q_percolation):
+    """
+    :param q_percolation:
+    :return:
+    """
+    strct = []
+    vect = []
+    for i in q_percolation.items():
+        x = i[0] + 1
+        y = x * i[1]
+        strct.append(y)
+        vect.append(i[1])
+    z = sum(strct)
+    complexity = 2 * (z / ((max(vect) + 1) * (max(vect) + 2)))
+    return complexity
+

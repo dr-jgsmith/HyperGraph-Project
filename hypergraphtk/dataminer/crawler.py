@@ -46,7 +46,7 @@ class crawler:
             soup = BeautifulSoup(c, "lxml")
             for link in soup.find_all("a"):
                 data = link.get("href")
-                if data == None:
+                if data is None:
                     pass
                 elif data[:5] == "https":
                     row = (i, data + "/")

@@ -1,3 +1,9 @@
+from hypergraphtk.dataminer.wikidata import wikidata
+from hypergraphtk.storage.hyperdb import hyperdb
+from hypergraphtk.text.txtprocessor import TxtProcessor
+from hypergraphtk.core.hyper_graph import *
+
+
 """
 The script is an example application for creating knowledge representations
 from Wikipedia articles and link lists.
@@ -7,10 +13,7 @@ and tokens and then provides a counting of the phrases and tokens.
 
 Phrases and values are then uploaded to the hyperdb. 
 """
-from hypergraphtk.dataminer.wikidata import wikidata
-from hypergraphtk.storage.hyperdb import hyperdb
-from hypergraphtk.text.txtprocessor import TxtProcessor
-from hypergraphtk.core.mcqda import *
+
 
 wiki = wikidata()
 process = TxtProcessor()
@@ -50,12 +53,13 @@ def word_ranker(content):
         # load clean data into spacy
         process.load_sequence(clean)
         # extract and count words
-        #x = process.extract_tokens_np()
+        # x = process.extract_tokens_np()
         x = process.extract_tokens_pos()
         ranked_words = process.rank_words(x)
         return ranked_words
     else:
         return None
+
 
 def word_phrase_ranker(content):
     # ranks words in a document - bag of words representation
@@ -104,6 +108,7 @@ def rank_wiki_words(topic):
     else:
         return None
 
+
 def rank_wiki_word_phrases(topic):
     # Get wikipedia page content for a given topic
     content = wiki.get_page(topic)
@@ -133,13 +138,4 @@ def search_list(topic_list):
 
     return
 
-#topic_list = ['finance', 'disaster', 'famine', 'disease', 'war', 'petroleum']
-#search_list(topic_list)
-#rank_wiki_words('finance')
-x = db.get_matrix()
-print(x)
-v = db.get_vertex_set()
-
-h = db.get_hyperedge_set()
-print(h)
 

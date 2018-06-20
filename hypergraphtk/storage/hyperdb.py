@@ -5,16 +5,16 @@ from stuf import stuf
 class hyperdb:
     '''
     Hyperdb stores hyperedges, vertices and vertex weights or values
-    
-    Methods can be used to store relations between edges and vertices, and 
+
+    Methods can be used to store relations between edges and vertices, and
     for retrieving these relations for matrix construction and hypergraph computing
     based on Dowker complexes and Q-Analysis.
-    
+
     Basic usage:
-        db_name = "sqlite:///test.db"
-        db = hyperdb(db=db_name)
-        db.add_hyperedge('test', 'test2', 'stuff', '1')
-        db.get_all_hyperedges()
+    db_name = "sqlite:///test.db"
+    db = hyperdb(db=db_name)
+    db.add_hyperedge('test', 'test2', 'stuff', '1')
+    db.get_all_hyperedges()
     '''
 
     def __init__(self, db='default'):
@@ -23,7 +23,7 @@ class hyperdb:
         # You can turn this off.
         # For more information on dataset, refer to their website
         # https://dataset.readthedocs.io/en/latest/
-        
+
         # Establish connection
         if db is 'default':
             self.db = dataset.connect("sqlite:///hypergraph.db", row_type=stuf)

@@ -1,5 +1,6 @@
 import re
 
+
 def clean_html(html):
     """
     Remove HTML markup from the given string.
@@ -30,7 +31,3 @@ def clean_html(html):
             pass
     clean = ' '.join(clean)
     return clean
-
-
-    
-        

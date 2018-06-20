@@ -5,35 +5,50 @@ from matplotlib import pyplot
 import matplotlib
 import seaborn as sns
 
-
 """
 Visualization functions for processing graphs, hypergraphs and simplicial 
 complexes. TODOs add options for saving visuals. 
 """
+
+
 def visualize_q_percolation(Q):
-    # Takes a python dictionary of variables (keys) and values 
-    values = [i[1] for i in Q.items()]
+    """
+    Takes a python dictionary of variables (keys) and values
+    :param Q:
+    :return:
+    """
+    values = Q
     plt.ylabel('Number of Components for Q-Dimension')
     plt.title('Q-Value Percolation')
     plt.plot(values)
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
-    
+
+
 def visualize_p_percolation(P):
-    # Takes a python dictionary of variables (keys) and values 
-    values = [i[1] for i in P.items()]
+    """
+    Takes a python dictionary of variables (keys) and values
+    :param P:
+    :return:
+    """
+    values = P
     plt.ylabel('Number of Simplicies for Q-Dimension')
     plt.title('P-Value Percolation')
     plt.plot(values)
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
+
+
 def visualize_q(Q, simplex_set):
-    labels = [i for i in simplex_set]
-    values = [i for i in Q]
+    """
+    :param Q:
+    :param simplex_set:
+    :return:
+    """
+    labels = simplex_set
+    values = Q
     pos = np.arange(len(labels))
     plt.bar(pos, values, align='center')
     plt.xticks(pos, labels)
@@ -42,7 +57,8 @@ def visualize_q(Q, simplex_set):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
+
+
 def visualize_q_slice(Q, simplex_set, theta=1):
     terms = {}
     count = 0
@@ -51,12 +67,12 @@ def visualize_q_slice(Q, simplex_set, theta=1):
             terms[simplex_set[count]] = i
         else:
             pass
-        count = count + 1 
+        count = count + 1
     values = []
     labels = []
     for i in terms.items():
         values.append(i[1])
-        labels.append(i[0])  
+        labels.append(i[0])
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center')
     plt.xticks(y_pos, labels)
@@ -66,11 +82,11 @@ def visualize_q_slice(Q, simplex_set, theta=1):
     fig.set_size_inches(10, 8)
     plt.show()
     return terms
-    
-    
-def visualize_eccentricity(simplex_ecc):
-    labels = [i[0] for i in simplex_ecc.items()]
-    values = [i[1] for i in simplex_ecc.items()]
+
+
+def visualize_eccentricity(ecc):
+    labels = range(len(ecc))
+    values = ecc
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center')
     plt.xticks(y_pos, labels)
@@ -79,17 +95,11 @@ def visualize_eccentricity(simplex_ecc):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
- 
+
 
 def visualize_retained_ecc(ecc):
-    terms = {}
-    for i in ecc.items():
-        if i[1] > 0:
-            terms[i[0]] = i[1]
-        else:
-            pass
-    labels = [i[0] for i in terms.items()]
-    values = [i[1] for i in terms.items()]
+    labels = range(len(ecc))
+    values = ecc
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center')
     plt.xticks(y_pos, labels)
@@ -98,21 +108,22 @@ def visualize_retained_ecc(ecc):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    return terms
-    
+    return
+
+
 def visualize_simple_graph(I, IT):
     am = (np.dot(I.as_matrix(), IT.as_matrix()) > 0).astype(int)
-    #np.fill_diagonal(am, 0)
+    # np.fill_diagonal(am, 0)
     G = nx.from_numpy_matrix(am)
-    #Draw simplex graph
+    # Draw simplex graph
     pos = nx.shell_layout(G)
     nx.draw(G, pos)
     # show graph
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
-    
+
+
 def visualize_weighted_graph(edges):
     G = nx.Graph()
     G.add_weighted_edges_from(edges)
@@ -122,8 +133,8 @@ def visualize_weighted_graph(edges):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
-    
+
+
 def visualize_incidence_graph(edges):
     G = nx.Graph()
     G.add_weighted_edges_from(edges)
@@ -133,8 +144,8 @@ def visualize_incidence_graph(edges):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
-    
+
+
 def visualize_bipart_graph(bigraph):
     l, r = nx.bipartite.sets(bigraph)
     pos = {}
@@ -145,14 +156,16 @@ def visualize_bipart_graph(bigraph):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
+
+
 def visualize_qmatrix(qmatrix):
     sns.set()
     ax = sns.heatmap(qmatrix)
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-    
+
+
 def visualize_conjugate(conj):
     sns.set()
     ax = sns.heatmap(conj)
@@ -161,9 +174,9 @@ def visualize_conjugate(conj):
     plt.show()
 
 
-def visualize_pri_histogram(ranking, theta):
-    labels = [i[0] for i in ranking.items()]
-    values = [i[1] for i in ranking.items()]
+def visualize_pri_histogram(ranking):
+    labels = range(len(ranking))
+    values = ranking
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center')
     plt.xticks(y_pos, labels)
@@ -175,8 +188,8 @@ def visualize_pri_histogram(ranking, theta):
 
 
 def visualize_pri_line(ranking, theta):
-    labels = [i[0] for i in ranking.items()]
-    values = [i[1] for i in ranking.items()]
+    labels = range(len(ranking))
+    values = ranking
     y_pos = np.arange(len(labels))
     plt.plot(y_pos, values, "s-")
     plt.xticks(y_pos, labels)
@@ -188,8 +201,8 @@ def visualize_pri_line(ranking, theta):
 
 
 def visualize_psi_histogram(psi, theta):
-    labels = [i[0] for i in psi.items()]
-    values = [i[1] for i in psi.items()]
+    labels = range(len(psi))
+    values = psi
     y_pos = np.arange(len(labels))
     plt.bar(y_pos, values, align='center')
     plt.xticks(y_pos, labels)
@@ -201,8 +214,8 @@ def visualize_psi_histogram(psi, theta):
 
 
 def visualize_psi_line(psi, theta):
-    labels = [i[0] for i in psi.items()]
-    values = [i[1] for i in psi.items()]
+    labels = range(len(psi))
+    values = psi
     y_pos = np.arange(len(labels))
     plt.plot(y_pos, values, "o-")
     plt.xticks(y_pos, labels)
@@ -211,6 +224,3 @@ def visualize_psi_line(psi, theta):
     fig = matplotlib.pyplot.gcf()
     fig.set_size_inches(10, 8)
     plt.show()
-
-
-

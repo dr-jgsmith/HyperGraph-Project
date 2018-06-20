@@ -19,7 +19,7 @@ class rsstreams:
         # List of RSS feeds that we will fetch and combine
         self.newsurls = {
             'apnews': 'http://hosted2.ap.org/atom/APDEFAULT/3d281c11a76b4ad082fe88aa0db04909',
-            'googlenews': 'http://news.google.com/?output=rss',
+            'googlenews': 'https://www.google.com/alerts/feeds/04804902391332952922/16891434162289931789',
             'reutersBiz': 'http://feeds.reuters.com/reuters/businessNews',
             'energynews': 'http://fuelfix.com/blog/author/bloomberg/feed/',
             'earnings': 'http://www.cnbc.com/id/15839135/device/rss/rss.html',
@@ -75,8 +75,7 @@ class rsstreams:
         return self.news_list
 
     
-    
-    
+
     
     
 
