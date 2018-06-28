@@ -20,10 +20,11 @@ matrix = [[0, 0, 7, 0, 0, 6, 3, 2],
           [3, 6, 6, 0, 0, 0, 0, 0]]
 
 
-weights = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+weights = [1.0, 1.0, 5.0, 1.0, 1.0, 3.0, 1.0, 10.0]
 cut_points = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
 
 normed = normalize(np.array(matrix))
+
 qgraphs = simple_qanalysis(normed, cut_points)
 print(qgraphs)
 

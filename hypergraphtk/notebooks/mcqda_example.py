@@ -34,16 +34,34 @@ cut_points = [0.2, 0.4, 0.6, 0.8]
 norm = normalize(np.array(matrix))
 print(norm)
 
-mqa = compute_mcqa(np.array(matrix), weights, cut_points)
-print(mqa)
+mqa_i = compute_mcqa_i(np.array(matrix), weights, cut_points)
+print(mqa_i)
+visualize_pri_histogram(mqa_i)
 
-visualize_pri_histogram(mqa[0])
-visualize_pri_histogram(mqa[1])
+mqa_ii = compute_mcqa_ii(np.array(matrix), weights, cut_points)
+print(mqa_ii)
+visualize_pri_histogram(mqa_ii)
 
-sg = sparse_graph(norm, 0.4)
-sgm = compute_graph_matrix_sparse(sg)
-print(sgm)
+mqa_iii = compute_mcqa_iii(np.array(matrix), weights, cut_points)
+print(mqa_iii)
+visualize_pri_histogram(mqa_iii)
 
-for i in range(len(A)):
-    path = compute_paths(sgm, i)
-    print(path)
+
+qgraphs = simple_qanalysis(norm, cut_points)
+print(qgraphs)
+
+q = compute_q_structure(qgraphs)
+print(q)
+visualize_q_percolation(q)
+
+p = compute_p_structure(qgraphs)
+print(p)
+visualize_p_percolation(p)
+
+p = compute_p_structure(qgraphs)
+print(p)
+visualize_p_percolation(p)
+
+ecc = chin_ecc(qgraphs, range(len(matrix)))
+print(ecc)
+visualize_eccentricity(ecc)

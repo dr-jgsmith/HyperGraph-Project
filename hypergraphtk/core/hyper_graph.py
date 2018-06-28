@@ -1,14 +1,15 @@
 from numba import jit
 import numpy as np
-from scipy.sparse import csr_matrix, csgraph
+from scipy.sparse import csr_matrix
 import networkx as nx
+
+
 """
 These functions use the Numba JIT compiler to speed up computational performance on
 large data arrays and matrices. These are particularly useful for massive matrix multiplication
 problems.
 
 This is a work in progress!!! Changes will be made...
-
 """
 
 
@@ -92,6 +93,11 @@ def invert_pattern(pattern_vector):
 
 @jit
 def invert_matrix(matrix):
+    """
+    Takes a matrix as a list
+    :param matrix: python list
+    :return: numpy array
+    """
     inv_matrix = ['x']
     for i in matrix:
         inv = invert_pattern(i)
@@ -101,6 +107,14 @@ def invert_matrix(matrix):
 
 @jit
 def normalize(matrix):
+    """
+    Computes a normalization of the matrix values.
+    This can be accomplished in a number of ways, and this method is only one approach
+
+    Another approach could combine a normalization that is takes both rows and columns in the matrix.
+    :param matrix: python list or numpy array
+    :return: numpy array
+    """
     normed = ['x']
     for i in range(len(matrix)):
         row = []
@@ -113,6 +127,13 @@ def normalize(matrix):
 
 @jit
 def compute_incident(value_matrix, theta, slice_type='upper'):
+    """
+    Much improved incident relation
+    :param value_matrix: numpy matrix, array or python list
+    :param theta: float
+    :param slice_type: string
+    :return: numpy array
+    """
     if slice_type is 'upper':
         data = value_matrix >= theta
     else:
@@ -149,118 +170,11 @@ def sparse_graph(incidence, theta):
         pass
 
 
-def dowker_relation(sparse_graph):
+def graph_to_matrix(sparse_graph):
     """
-    This provides a fast approach to computing the shared-face relation between simplicies.
-    The function takes a sparse graph and its conjugate as inputs. Returns the dwoker relation + 1.
-    To compute the true relation, subtract the -1 from the relation.
-
+    Takes the constructed graph of a matrix of simplicial complexes and computes the sparse representation
     :param sparse_graph: list of tuples
-    :param conjugate_graph: list of tuples
     :return: numpy matrix
-    """
-    try:
-        sparseg = compute_graph_matrix_sparse(sparse_graph)
-        conjq = sparseg.transpose()
-        q_matrix = sparseg.dot(conjq).toarray()
-        q_matrix = np.subtract(q_matrix, 1)
-        return q_matrix
-    except MemoryError:
-        print('Memory Error')
-        pass
-    except RuntimeError:
-        print('Runtime Error')
-        pass
-    except TypeError:
-        print('Type Error')
-        pass
-    except NameError:
-        print('Name Error')
-        pass
-
-
-def compute_classes(edges):
-    """
-    Collect all connected components - Identify equivelence classes
-    These are the q-connected components.
-    This is central data type for exploring multi-dimensional persistence of Eq Classes
-    Takes a list of tuple edges
-    :param edges: sparse graph
-    :return: list of sets
-    """
-    try:
-        G = nx.Graph()
-        G.add_weighted_edges_from(edges)
-        comp = nx.connected_components(G)
-        return  sorted(list(comp))
-    except MemoryError:
-        print('Memory Error')
-        pass
-    except RuntimeError:
-        print('Runtime Error')
-        pass
-    except TypeError:
-        print('Type Error')
-        pass
-    except NameError:
-        print('Name Error')
-        pass
-
-
-def compute_class_graph(comp_list):
-    """
-    The ith value in the graph repreents the simplicial complex, will the jth value represents the simplex it is attached to the dimension.
-    :param comp_list: a list of sets representing connected simplicies
-    :return: graph representation with component indexed by location in the complex set
-    """
-    try:
-        class_graph = [(i, j, 1) for i in range(len(comp_list)) for j in comp_list[i]]
-        return class_graph
-    except MemoryError:
-        print('Memory Error')
-        pass
-    except RuntimeError:
-        print('Runtime Error')
-        pass
-    except TypeError:
-        print('Type Error')
-        pass
-    except NameError:
-        print('Name Error')
-        pass
-
-
-def compute_graph_matrix(sparse_graph):
-    """
-    Takes the constructed graph of a matrix of simplicial complexes and computes the sparse representation
-    :param class_graph: list of tuples
-    :return: dense matrix
-    """
-    try:
-        row = np.array([i[0] for i in sparse_graph])
-        col = np.array([i[1] for i in sparse_graph])
-        data = np.array([i[2] for i in sparse_graph])
-        matrix = csr_matrix((data, (row, col)), shape=(max(row)+1, max(col)+1)).toarray()
-        return matrix
-    except MemoryError:
-        print('Memory Error')
-        pass
-    except RuntimeError:
-        print('Runtime Error')
-        pass
-    except TypeError:
-        print('Type Error')
-        pass
-    except NameError:
-        print('Name Error')
-        pass
-
-
-def compute_graph_matrix_sparse(sparse_graph):
-    """
-    Takes the constructed graph of a matrix of simplicial complexes and computes the sparse representation
-    :param sparse_graph: list of tuples
-    :return sparse matrix
     """
     try:
         row = np.array([i[0] for i in sparse_graph])
@@ -282,61 +196,63 @@ def compute_graph_matrix_sparse(sparse_graph):
         pass
 
 
-@jit
-def compute_paths(sparse_matrix, simplex_index):
+def compute_classes(sparse_graph):
     """
-    :param sparse_matrix: csr_matrix scipy
-    :param simplex_index: vector of simplex labels - integer values representing label index.
-    :return: arrays
+    Collect all connected components - Identify equivalence classes
+    These are the q-connected components.
+    This is central data type for exploring multi-dimensional persistence of Eq Classes
+    Takes a list of tuple edges
+    :param edges: sparse graph
+    :return: list of sets
     """
-    seen = np.array([simplex_index])
-    fronts = [np.array([simplex_index])]
-    for i in fronts:
-        tmp = []
-        for j in i:
-            data = sparse_matrix.getrow(j).nonzero()[1]
-            new = np.setdiff1d(data, seen)
-            seen = np.union1d(new, seen)
-            tmp.extend(new)
+    try:
+        G = nx.Graph()
+        G.add_weighted_edges_from(sparse_graph)
+        comp = nx.connected_components(G)
+        return sorted(list(comp))
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
-        if len(np.unique(tmp)) > 0:
-            fronts.append(np.unique(tmp))
-        else:
-            pass
-    return fronts
 
-@jit
-def compute_path(sparse_matrix, simplex):
+def dowker_relation(sparse_graph):
     """
-    :param sparse_matrix: csr_matrix scipy
-    :param simplex_index: vector of simplex labels - integer values representing label index.
-    :return: arrays
-    """
-    seen = np.array([simplex])
-    fronts = [np.array([simplex])]
-    for i in fronts:
-        tmp = []
-        for j in i:
-            data = sparse_matrix.getrow(j).nonzero()[1]
-            new = np.setdiff1d(data, seen)
-            seen = np.union1d(new, seen)
-            tmp.extend(new)
+    Could be the Atkin relation...
 
-        if len(np.unique(tmp)) > 0:
-            fronts.append(np.unique(tmp))
-        else:
-            pass
-    return fronts
+    This provides a fast approach to computing the shared-face relation between simplicies.
+    The function takes a sparse graph and its conjugate as inputs. Returns the dowker relation + 1.
+    To compute the true relation, subtract the -1 from the relation.
 
-@jit
-def sum_class_matrix(matrix, axis_val):
+    :param sparse_graph: list of tuples
+    :return: numpy matrix
     """
-    :param matrix:
-    :param axis_val:
-    :return:
-    """
-    sums = np.sum(matrix, axis=axis_val)
-    return sums
+    try:
+        sparse_rep = graph_to_matrix(sparse_graph)
+        conjq = sparse_rep.transpose()
+        matrix = sparse_rep.dot(conjq).toarray()
+        matrix = np.subtract(matrix, 1)
+        return matrix
+    except MemoryError:
+        print('Memory Error')
+        pass
+    except RuntimeError:
+        print('Runtime Error')
+        pass
+    except TypeError:
+        print('Type Error')
+        pass
+    except NameError:
+        print('Name Error')
+        pass
 
 
 @jit
@@ -355,6 +271,41 @@ def simple_qanalysis(value_matrix, slicing_list):
         classes = compute_classes(graph)
         qgraph.append(classes)
     return qgraph[1:]
+
+
+@jit
+def compute_path(sparse_matrix, simplex):
+    """
+    The compute_path function computes the path of dispersion. An important function for defining multi-dimensional
+    paths in a collection of data.
+
+    :param sparse_matrix: csr_matrix scipy
+    :param simplex: vector of simplex labels - integer values representing label index. Typically takes an int | index
+    :return: list of arrays
+    """
+    seen = np.array([simplex])
+    # t_fronts are seeded with the starting simplex
+    fronts = [np.array([simplex])]
+    # iterate through each front and append new transmission fronts as appropriate.
+    for i in fronts:
+        tmp = []
+        for j in i:
+            # get the matrix row of values for each simplex connected to the starting simplex
+            # this is ID'd based upon the index value for the simplex in the graph
+            data = sparse_matrix.getrow(j).nonzero()[1]
+            # use scipy intersection method to identify relations between new (unseen) simplices
+            new = np.setdiff1d(data, seen)
+            # collect all that are new
+            seen = np.union1d(new, seen)
+            # extend the collection
+            tmp.extend(new)
+        # check to ensure uniqueness
+        if len(np.unique(tmp)) > 0:
+            fronts.append(np.unique(tmp))
+        else:
+            pass
+    # return transmission fronts
+    return fronts
 
 
 @jit
@@ -455,10 +406,10 @@ def chin_ecc(comps, hyper_edges):
 @jit
 def compute_psi(value_matrix, weights, slice_list):
     """
-    :param value_matrix:
-    :param weights:
-    :param slice_list:
-    :return:
+    :param value_matrix: REQUIRES - Numpy Array - normed or raw value input
+    :param weights: numpy array float or int
+    :param slice_list: can be list or array
+    :return: numpy array
     """
     psi = ['x']
     psimax = ['x']
@@ -470,7 +421,6 @@ def compute_psi(value_matrix, weights, slice_list):
             repr[i] = sum(data[i])
         psi.append(repr)
         psimax.append(sum(weights))
-
     scores = np.array(psi[1:]).sum(axis=0)
     maxscore = np.array(psimax[1:]).sum(axis=0)
     psi = np.divide(scores, maxscore)
@@ -494,13 +444,12 @@ def compute_pci(value_matrix, slice_list):
         pmax = len(strct) - 1
         tmp = np.zeros(len(strct))
         tmax = np.zeros(len(strct))
+
         for j in range(len(Q)):
-            # q = max([Q[j][i] for i in range(len(Q[j])) if i is not j])
             q = []
             for k in range(len(Q[j])):
                 if k is not j:
                     q.append(Q[j][k])
-
             if strct[j] < 0:
                 tmp[j] = 0
                 tmax[j] = pmax
@@ -519,6 +468,48 @@ def compute_pci(value_matrix, slice_list):
 @jit
 def compute_pdi(value_matrix, slice_list):
     """
+    Computes a 'preference' discordance index
+    :param value_matrix:
+    :param slice_list:
+    :return:
+    """
+    pdi = ['x']
+    pdimax = ['x']
+    for i in slice_list:
+        incident = compute_incident(value_matrix, i)
+        complement = invert_matrix(incident)
+        g = sparse_graph(complement, 1)
+        Q = dowker_relation(g)
+        strct = Q.diagonal()
+        tmp = np.zeros(len(strct))
+        tmax = np.zeros(len(strct))
+        pmax = len(strct) - 1
+        for j in range(len(Q[0])):
+            q = []
+            for k in range(len(Q[0][j])):
+                if k is not j:
+                    q.append(Q[0][j][k])
+
+            if strct[j] < 0:
+                tmp[j] = 0
+                tmax[j] = pmax
+            else:
+                val = strct[j] - max(q)
+                tmp[j] = val
+                tmax[j] = pmax
+        pdi.append(tmp)
+        pdimax.append(tmax)
+    pdi = np.array(pdi[1:]).sum(axis=0)
+    pdimax = np.array(pdimax[1:]).sum(axis=0)
+    pdi = np.divide(pdi, pdimax)
+    return pdi
+
+
+
+@jit
+def compute_pdi(value_matrix, slice_list):
+    """
+    Computes a 'preference' discordance index
     :param value_matrix:
     :param slice_list:
     :return:
@@ -581,7 +572,34 @@ def mcqa_ranking_II(psi, pci, pdi):
     return pri
 
 
-def compute_mcqa(value_matrix, criteria, slicing_list):
+def mcqa_ranking_III(psi, discord):
+    """
+    :param psi:
+    :param discord:
+    :return:
+    """
+    pri_psi = np.subtract(1, psi)
+    pri_pdi = np.subtract(1, discord)
+    pri = np.add(pri_psi, pri_pdi)
+    return pri
+
+
+def compute_mcqa_i(value_matrix, criteria, slicing_list):
+    """
+    :param value_matrix:
+    :param criteria:
+    :param slicing_list:
+    :return:
+    """
+    norm = normalize(value_matrix)
+    psin = compute_psi(norm, criteria, slicing_list)
+    pcin = compute_pci(norm, slicing_list)
+
+    mcq = mcqa_ranking_I(psin, pcin)
+    return mcq
+
+
+def compute_mcqa_ii(value_matrix, criteria, slicing_list):
     """
     :param value_matrix:
     :param criteria:
@@ -593,10 +611,23 @@ def compute_mcqa(value_matrix, criteria, slicing_list):
     pcin = compute_pci(norm, slicing_list)
     pdin = compute_pdi(norm, slicing_list)
 
-    mcq = mcqa_ranking_I(psin, pcin)
     mcq2 = mcqa_ranking_II(psin, pcin, pdin)
+    return mcq2
 
-    return mcq, mcq2
+
+def compute_mcqa_iii(value_matrix, criteria, slicing_list):
+    """
+    :param value_matrix:
+    :param criteria:
+    :param slicing_list:
+    :return:
+    """
+    norm = normalize(value_matrix)
+    psin = compute_psi(norm, criteria, slicing_list)
+    pdin = compute_pdi(norm, slicing_list)
+
+    mcq3 = mcqa_ranking_III(psin, pdin)
+    return mcq3
 
 
 # Compute system complexity.
@@ -616,4 +647,3 @@ def compute_complexity(q_percolation):
     z = sum(strct)
     complexity = 2 * (z / ((max(vect) + 1) * (max(vect) + 2)))
     return complexity
-

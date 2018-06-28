@@ -85,6 +85,11 @@ def visualize_q_slice(Q, simplex_set, theta=1):
 
 
 def visualize_eccentricity(ecc):
+    """
+    Takes a vector of eccentricity values
+    :param ecc: numpy array or list
+    :return:
+    """
     labels = range(len(ecc))
     values = ecc
     y_pos = np.arange(len(labels))

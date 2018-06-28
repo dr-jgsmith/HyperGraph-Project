@@ -34,7 +34,6 @@ class crawler:
                 pass
         return self.start_list
 
-
     # Second order web scrap for link retreival. This function can only work if a link list has been generatated from the previous function call.
     def _deep_link_scrape(self, link_list):
         self.link_list = link_list
@@ -57,8 +56,6 @@ class crawler:
                 else:
                     pass  
         return self.edges
-
-        
                 
     # Simple function for calling a python requests response to render html as a raw/binary output.
     def get_raw_html(self):
@@ -66,8 +63,7 @@ class crawler:
         s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36'
         self.r = s.get(self.start_url)
         return self.r.raw
-    
-    
+
     # Simple function for calling a python requests response to render html as a text string.
     def get_data_from_link(self, url):
         s = requests.Session()
@@ -76,7 +72,7 @@ class crawler:
         self.texts = r.text
         return self.texts
     
-     # Simple function for calling a python requests response to render html as a text string.
+    # Simple function for calling a python requests response to render html as a text string.
     def get_text_from_link(self, url):
         s = requests.Session()
         s.headers['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/34.0.1847.131 Safari/537.36'

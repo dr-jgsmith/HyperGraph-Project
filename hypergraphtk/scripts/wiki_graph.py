@@ -1,7 +1,6 @@
-from hypergraphtk.dataminer.wikidata import wikidata
 from hypergraphtk.storage.hyperdb import hyperdb
 from hypergraphtk.text.txtprocessor import TxtProcessor
-from hypergraphtk.core.hyper_graph import *
+from hypergraphtk.dataminer.wikidata import wikidata
 
 
 """
@@ -15,12 +14,14 @@ Phrases and values are then uploaded to the hyperdb.
 """
 
 
-wiki = wikidata()
-process = TxtProcessor()
-db = hyperdb()
+def load():
+    wiki = wikidata()
+    process = TxtProcessor()
+    hdb = hyperdb()
+    return wiki, process, hdb
 
 
-def phrase_ranker(content):
+def phrase_ranker(object, content):
     # Phrase ranker ranks phrases in a document
     if content:
         # convert content to lower case
@@ -28,19 +29,19 @@ def phrase_ranker(content):
         # remove new lines and replace with a space.
         data = norm.replace('\n', '')
         # remove special characters
-        process.atomize(data)
-        clean = process.tokens()
+        object.atomize(data)
+        clean = object.tokens()
         # load clean data into spacy
-        process.load_sequence(clean)
+        object.load_sequence(clean)
         # extract a count phrases
-        process.tokenize()
-        ranked_phrases = process.rank_phrases()
+        object.tokenize()
+        ranked_phrases = object.rank_phrases()
         return ranked_phrases
     else:
         return None
 
 
-def word_ranker(content):
+def word_ranker(object, content):
     # ranks words in a document - bag of words representation
     if content:
         # convert content to lower case
@@ -48,20 +49,20 @@ def word_ranker(content):
         # remove new lines and replace with a space.
         data = norm.replace('\n', ' ')
         # remove special characters
-        process.atomize(data)
-        clean = process.tokens()
+        object.atomize(data)
+        clean = object.tokens()
         # load clean data into spacy
-        process.load_sequence(clean)
+        object.load_sequence(clean)
         # extract and count words
         # x = process.extract_tokens_np()
-        x = process.extract_tokens_pos()
-        ranked_words = process.rank_words(x)
+        x = object.extract_tokens_pos()
+        ranked_words = object.rank_words(x)
         return ranked_words
     else:
         return None
 
 
-def word_phrase_ranker(content):
+def word_phrase_ranker(object, content):
     # ranks words in a document - bag of words representation
     if content:
         # convert content to lower case
@@ -69,73 +70,72 @@ def word_phrase_ranker(content):
         # remove new lines and replace with a space.
         data = norm.replace('\n', ' ')
         # remove special characters
-        process.atomize(data)
-        clean = process.tokens()
+        object.atomize(data)
+        clean = object.tokens()
         # load clean data into spacy
-        process.load_sequence(clean)
+        object.load_sequence(clean)
         # extract and count words
-        ranked_word_phrases = process.rank_word_phrases()
+        ranked_word_phrases = object.rank_word_phrases()
         return ranked_word_phrases
     else:
         return None
 
 
-def rank_wiki_phrases(topic):
+def rank_wiki_phrases(object, topic):
     # Get wikipedia page content for a given topic
-    content = wiki.get_page(topic)
+    content = object[0].get_page(topic)
     # Encode topic using the word_encoder or the phrase_encoder
-    data = phrase_ranker(content)
+    data = phrase_ranker(object[1], content)
     if data:
         for i in data.items():
             # data_row = ['wiki_graph', topic, i[0], i[1]]
-            db.add_hyperedge('wiki_graph', topic, i[0], i[1])
-        return wiki.page.links
+            object[2].add_hyperedge('wiki_graph', topic, i[0], i[1])
+        return object[0].page.links
     else:
         return None
 
 
-def rank_wiki_words(topic):
+def rank_wiki_words(object, topic):
     # Get wikipedia page content for a given topic
-    content = wiki.get_page(topic)
+    content = object[0].get_page(topic)
     # Encode topic using the word_encoder or the phrase_encoder
-    data = word_ranker(content)
+    data = word_ranker(object[1], content)
     print(data)
     if data:
         for i in data.items():
             # data_row = ['wiki_graph', topic, i[0], i[1]]
-            db.add_hyperedge('wiki_graph', topic, i[0], i[1])
-        return wiki.page.links
+            object[2].add_hyperedge('wiki_graph', topic, i[0], i[1])
+        return object[0].page.links
     else:
         return None
 
 
-def rank_wiki_word_phrases(topic):
+def rank_wiki_word_phrases(object, topic):
     # Get wikipedia page content for a given topic
-    content = wiki.get_page(topic)
+    content = object[0].get_page(topic)
     # Encode topic using the word_encoder or the phrase_encoder
-    data = word_phrase_ranker(content)
-    print(data)
+    data = word_phrase_ranker(object[1], content)
+    # print(data)
     if data:
         for i in data.items():
             # data_row = ['wiki_graph', topic, i[0], i[1]]
-            db.add_hyperedge('wiki_graph', topic, i[0], i[1])
-        return wiki.page.links
+            object[2].add_hyperedge('wiki_graph', topic, i[0], i[1])
+        return object[0].page.links
     else:
         return None
 
 
 def search_list(topic_list):
+    dobject = load()
     topics = []
     for topic in topic_list:
         print(topic)
-        data = rank_wiki_words(topic)
+        data = rank_wiki_words(dobject, topic)
         [topics.append(link.lower()) for link in data]
 
     topic_set = sorted(set(topics))
     for j in topic_set:
         print(j)
-        rank_wiki_words(j)
+        rank_wiki_words(dobject, j)
 
     return
-
-
