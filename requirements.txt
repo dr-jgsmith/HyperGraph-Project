@@ -55,7 +55,7 @@ thinc==6.10.2
 toolz==0.9.0
 tqdm==4.19.6
 ujson==1.35
-urllib3==1.22
+urllib3==1.26.5
 wcwidth==0.1.7
 wikipedia==1.4.0
 wrapt==1.10.11
