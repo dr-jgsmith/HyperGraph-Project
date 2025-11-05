@@ -481,47 +481,6 @@ def compute_pdi(value_matrix, slice_list):
         g = sparse_graph(complement, 1)
         Q = dowker_relation(g)
         strct = Q.diagonal()
-        tmp = np.zeros(len(strct))
-        tmax = np.zeros(len(strct))
-        pmax = len(strct) - 1
-        for j in range(len(Q[0])):
-            q = []
-            for k in range(len(Q[0][j])):
-                if k is not j:
-                    q.append(Q[0][j][k])
-
-            if strct[j] < 0:
-                tmp[j] = 0
-                tmax[j] = pmax
-            else:
-                val = strct[j] - max(q)
-                tmp[j] = val
-                tmax[j] = pmax
-        pdi.append(tmp)
-        pdimax.append(tmax)
-    pdi = np.array(pdi[1:]).sum(axis=0)
-    pdimax = np.array(pdimax[1:]).sum(axis=0)
-    pdi = np.divide(pdi, pdimax)
-    return pdi
-
-
-
-@jit
-def compute_pdi(value_matrix, slice_list):
-    """
-    Computes a 'preference' discordance index
-    :param value_matrix:
-    :param slice_list:
-    :return:
-    """
-    pdi = ['x']
-    pdimax = ['x']
-    for i in slice_list:
-        incident = compute_incident(value_matrix, i)
-        complement = invert_matrix(incident)
-        g = sparse_graph(complement, 1)
-        Q = dowker_relation(g)
-        strct = Q.diagonal()
         pmax = len(strct) - 1
         tmp = np.zeros(len(strct))
         tmax = np.zeros(len(strct))
